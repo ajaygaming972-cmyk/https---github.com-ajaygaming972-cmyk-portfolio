@@ -4,15 +4,46 @@ import { FormEvent, useState } from 'react';
 import { Eye, EyeOff, LockKeyhole, ShieldCheck, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+
 export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    // UI-only for now. Real authentication will be connected in the backend phase.
-    window.location.href = '/admin/dashboard';
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success || !result.token) {
+        throw new Error(result.message || 'Invalid email or password');
+      }
+
+      const storage = rememberMe ? localStorage : sessionStorage;
+      storage.setItem('admin_token', result.token);
+      localStorage.removeItem('admin_token');
+      sessionStorage.removeItem('admin_token');
+      storage.setItem('admin_token', result.token);
+
+      window.location.href = '/admin/dashboard';
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to sign in. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -40,8 +71,9 @@ export default function AdminLoginPage() {
             <form onSubmit={handleSubmit} className="space-y-5 rounded-3xl border border-white/10 bg-white/[0.025] p-5 shadow-2xl shadow-black/30 sm:p-7">
               <label className="block"><span className="mb-2 block text-xs font-semibold text-white/65">Email address</span><input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required placeholder="admin@example.com" className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3.5 text-sm text-white outline-none transition placeholder:text-white/20 focus:border-[#f5a623]/60 focus:ring-2 focus:ring-[#f5a623]/10" /></label>
               <label className="block"><span className="mb-2 block text-xs font-semibold text-white/65">Password</span><div className="relative"><input value={password} onChange={(e) => setPassword(e.target.value)} type={showPassword ? 'text' : 'password'} required placeholder="Enter your password" className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3.5 pr-12 text-sm text-white outline-none transition placeholder:text-white/20 focus:border-[#f5a623]/60 focus:ring-2 focus:ring-[#f5a623]/10" /><button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-white/30 hover:text-white/70">{showPassword ? <EyeOff size={17} /> : <Eye size={17} />}</button></div></label>
-              <div className="flex items-center justify-between gap-3 text-xs"><label className="flex items-center gap-2 text-white/45"><input type="checkbox" className="h-4 w-4 rounded border-white/20 bg-transparent text-[#f5a623] focus:ring-[#f5a623]" /> Remember me</label><button type="button" className="font-semibold text-[#f5a623] hover:text-[#ffc84a]">Forgot password?</button></div>
-              <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f5a623] to-[#e8940f] px-5 py-3.5 text-sm font-extrabold text-black shadow-[0_10px_35px_rgba(245,166,35,.12)] transition hover:-translate-y-0.5 hover:shadow-[0_15px_40px_rgba(245,166,35,.2)]">Sign in <ArrowRight size={17} /></button>
+              {error && <div className="rounded-xl border border-red-400/20 bg-red-400/10 px-3 py-2.5 text-xs text-red-200">{error}</div>}
+              <div className="flex items-center justify-between gap-3 text-xs"><label className="flex items-center gap-2 text-white/45"><input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="h-4 w-4 rounded border-white/20 bg-transparent text-[#f5a623] focus:ring-[#f5a623]" /> Remember me</label><button type="button" className="font-semibold text-[#f5a623] hover:text-[#ffc84a]">Forgot password?</button></div>
+              <button type="submit" disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f5a623] to-[#e8940f] px-5 py-3.5 text-sm font-extrabold text-black shadow-[0_10px_35px_rgba(245,166,35,.12)] transition hover:-translate-y-0.5 hover:shadow-[0_15px_40px_rgba(245,166,35,.2)] disabled:cursor-not-allowed disabled:opacity-60">{loading ? 'Signing in...' : 'Sign in'} {!loading && <ArrowRight size={17} />}</button>
             </form>
             <Link href="/" className="mt-6 block text-center text-xs text-white/30 hover:text-white/60">← Back to portfolio</Link>
           </div>
