@@ -1,0 +1,10 @@
+'use client';
+import { Plus, Pencil, Trash2, Sparkles } from 'lucide-react';
+const groups = [
+  { name: 'Frontend', skills: [['React', 90], ['JavaScript', 88], ['HTML & CSS', 92], ['Responsive Design', 86]] },
+  { name: 'Backend', skills: [['Node.js', 82], ['Express.js', 80], ['REST APIs', 84]] },
+  { name: 'Database', skills: [['MongoDB', 82]] },
+  { name: 'Auth & Real-time', skills: [['JWT', 78], ['Socket.IO', 80]] },
+  { name: 'Tools', skills: [['Git', 82], ['VS Code', 92]] },
+];
+export default function SkillsPage() { return <div className="space-y-6"><div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><h2 className="text-2xl font-extrabold text-white">Skills</h2><p className="mt-1 text-sm text-white/35">Organize your technical stack and proficiency.</p></div><button className="inline-flex w-fit items-center gap-2 rounded-xl bg-[#f5a623] px-4 py-3 text-xs font-extrabold text-black"><Plus size={16} /> Add Skill</button></div><div className="grid gap-5 lg:grid-cols-2">{groups.map((group) => <section key={group.name} className="rounded-2xl border border-white/10 bg-white/[0.02] p-5"><div className="mb-5 flex items-center gap-3"><div className="rounded-xl bg-[#f5a623]/10 p-2.5 text-[#f5a623]"><Sparkles size={17} /></div><div><h3 className="text-sm font-bold text-white">{group.name}</h3><p className="text-[10px] text-white/30">{group.skills.length} skills</p></div></div><div className="space-y-4">{group.skills.map(([name, score]) => <div key={name as string}><div className="mb-2 flex items-center justify-between"><span className="text-xs font-semibold text-white/75">{name}</span><div className="flex items-center gap-3"><span className="text-[10px] text-[#f5a623]">{score}%</span><button className="text-white/25 hover:text-[#f5a623]"><Pencil size={13} /></button><button className="text-white/25 hover:text-red-300"><Trash2 size={13} /></button></div></div><div className="h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-gradient-to-r from-[#e8940f] to-[#ffc84a]" style={{ width: `${score}%` }} /></div></div>)}</div></section>)}</div></div> }
