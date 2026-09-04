@@ -9,6 +9,7 @@ interface AppImageProps {
   height?: number;
   className?: string;
   priority?: boolean;
+  unoptimized?: boolean;
 }
 
 export default function AppImage({
@@ -18,6 +19,7 @@ export default function AppImage({
   height = 300,
   className = '',
   priority = false,
+  unoptimized = false,
 }: AppImageProps) {
   return (
     <Image
@@ -26,6 +28,7 @@ export default function AppImage({
       width={width}
       height={height}
       priority={priority}
+      unoptimized={unoptimized}
       className={className}
     />
   );
